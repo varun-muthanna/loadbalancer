@@ -1,0 +1,11 @@
+{
+    "listen_address": ":8080",
+    "backend_servers": [
+      "127.0.0.1:9001",
+      "127.0.0.1:9002",
+      "127.0.0.1:9003"
+    ],
+    "health_check_interval": 10,
+    "health_check_timeout": 2
+  }
+  
