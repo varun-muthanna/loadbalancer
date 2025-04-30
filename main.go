@@ -25,17 +25,20 @@ func main() {
 	}
 
 	var servers []*server.Server
+	var bannedDomains = []string{"domain1"}
 
-	for _, addr := range cfg.BackendServers {
-		servers = append(servers, server.NewServer(addr))
+	for _, m := range cfg.BackendServers {
+		for key , value := range m{
+			servers = append(servers, server.NewServer(key,value))
+		}
 	}
 
-	lb := balancer.NewLoadBalancer(servers)
+	lb := balancer.NewLoadBalancerWithForwardProxy(servers,bannedDomains)
 
 	healthInterval := time.Duration(cfg.HealthCheckInterval) * time.Second
 	healthTimeout := time.Duration(cfg.HealthCheckTimeout) * time.Second
 
-	health.StartHealthCheck(lb, healthInterval, healthTimeout)
+	health.StartHealthCheck(servers, healthInterval, healthTimeout)
 
 	fmt.Printf("Load Balancer listening on: %s", cfg.ListenAddress)
 	proxy.StartProxy(cfg.ListenAddress, lb)

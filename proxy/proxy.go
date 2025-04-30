@@ -38,6 +38,8 @@ func HandleConnecton(clientConn net.Conn, lb *balancer.Balancer) {
 
 	defer clientConn.Close()
 
+	//proxy should have the blocking (forward proxy policy) ? 
+
 	srv := lb.GetLeastConnections()
 
 	if srv == nil {
@@ -50,10 +52,10 @@ func HandleConnecton(clientConn net.Conn, lb *balancer.Balancer) {
 	srv.IncrementConnection()
 	defer srv.DecrementConnections()
 
-	srvconn, err := net.Dial("tcp", srv.Address)
+	srvconn, err := net.Dial("tcp", srv.GetAddress())
 
 	if err != nil {
-		log.Printf("Failed to connect to backend server %s: %v", srv.Address, err)
+		log.Printf("Failed to connect to backend server %s: %v", srv.GetAddress(), err)
 		srv.SetHealth(false)
 		return
 	}

@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	ListenAddress       string   `json:"listen_address"`
-	BackendServers      []string `json:"backend_servers"`
+	BackendServers      []map[string]string `json:"backend_servers"`
 	HealthCheckInterval int      `json:"health_check_interval"`
 	HealthCheckTimeout  int      `json:"health_check_timeout"`
 }

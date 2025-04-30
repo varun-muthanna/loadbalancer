@@ -4,12 +4,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/varun-muthanna/loadbalancer/balancer"
-
 	"github.com/varun-muthanna/loadbalancer/server"
 )
 
-func StartHealthCheck(lb *balancer.Balancer, interval, timeout time.Duration) { //both of type time.Duration
+func StartHealthCheck(servers []*server.Server, interval, timeout time.Duration) { //both of type time.Duration
 	//create new ticker , (timeout of tcp connection) for each server
 
 	ticker := time.NewTicker(interval)
@@ -17,12 +15,12 @@ func StartHealthCheck(lb *balancer.Balancer, interval, timeout time.Duration) { 
 
 	go func() { // separately runnning to main program , other sequential execution 
 		for range ticker.C {
-			for _, srv := range lb.Servers {
+			for _, srv := range servers {
 				go func(s *server.Server) { // go routine in for loop , for closure as it may always use last value of loop always (pass by reference) , now we pass by value
 					isHealthy := s.CheckHealth(timeout)
 					s.SetHealth(isHealthy)
 					if !isHealthy {
-						log.Printf("Server failed, Address :%s", s.Address)
+						log.Printf("Server failed, Address :%s", s.GetDomain())
 					}
 				}(srv)
 			}
