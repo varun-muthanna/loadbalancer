@@ -1,7 +1,6 @@
 package balancer
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/varun-muthanna/loadbalancer/server"
@@ -33,7 +32,7 @@ func (lb *Balancer) GetLeastConnections() *server.Server {
 	var mx = 1 << 15
 	var res *server.Server
 
-	fmt.Println(len(lb.servers))
+	//fmt.Println(len(lb.servers))
 
 	for _, srv := range lb.servers { //index ,server
 		srv.Mutex.Lock()
@@ -58,11 +57,9 @@ func (lb *Balancer) GetLeastConnections() *server.Server {
 
 	}
 
-	str := fmt.Sprintln( "Domain:" ,res.GetDomain(),"Active Connections" ,res.GetActiveConnections())
-	fmt.Println(str)
-
+	// str := fmt.Sprintln( "Domain:" ,res.GetDomain(),"Active Connections" ,res.GetActiveConnections())
+	// fmt.Println(str)
 
 	return res
-
 }
 

@@ -1,9 +1,10 @@
 # Load Balancer
 
-A simple load balancer project written in Go.
+A simple tcp load balancer project written in Go.
 
 ## Features
 - Least Connection request distribution
+- Forward proxy policy option with lb configuration 
 - Health checks
 
 ## Usage
