@@ -11,6 +11,7 @@ import (
 	"github.com/varun-muthanna/loadbalancer/health"
 	"github.com/varun-muthanna/loadbalancer/proxy"
 	"github.com/varun-muthanna/loadbalancer/server"  //go walks the directory tree and resolves it normally.
+	"github.com/varun-muthanna/loadbalancer/forwardproxy"
 )
 
 func main() {
@@ -25,7 +26,7 @@ func main() {
 	}
 
 	var servers []*server.Server
-	var bannedDomains = []string{"domain1"}
+	var bannedDomains = []string{"*1.com",}
 
 	for _, m := range cfg.BackendServers {
 		for key , value := range m{
@@ -33,7 +34,8 @@ func main() {
 		}
 	}
 
-	lb := balancer.NewLoadBalancerWithForwardProxy(servers,bannedDomains)
+	lb := balancer.NewLoadBalancer(servers)
+	fp := forwardproxy.NewForwardProxy(bannedDomains)
 
 	healthInterval := time.Duration(cfg.HealthCheckInterval) * time.Second
 	healthTimeout := time.Duration(cfg.HealthCheckTimeout) * time.Second
@@ -41,6 +43,6 @@ func main() {
 	health.StartHealthCheck(servers, healthInterval, healthTimeout)
 
 	fmt.Printf("Load Balancer listening on: %s", cfg.ListenAddress)
-	proxy.StartProxy(cfg.ListenAddress, lb)
+	proxy.StartProxy(cfg.ListenAddress, lb,fp)
 
 }

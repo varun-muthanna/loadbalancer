@@ -1,33 +1,32 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"log"
-	"net"
+	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 )
 
 var connectionCount int32
 
-func handleConnection(conn net.Conn) {
+type handler struct {
+	add string
+}
+
+func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	atomic.AddInt32(&connectionCount, 1)
+
 	defer func() {
 		atomic.AddInt32(&connectionCount, -1)
-		conn.Close()
 	}()
 
-	addr := conn.RemoteAddr().String()
-	log.Printf("Connection established from %s", addr)
+	var str string = fmt.Sprintf("hello you got loadbalanced to me at %s", h.add)
 
-	// Echo server: send back any received data
-	_, err := io.Copy(conn, conn)
-	if err != nil {
-		log.Printf("Connection error with %s: %v", addr, err)
-	}
-
-	log.Printf("Connection closed from %s", addr)
+	w.Write([]byte(str))
 }
 
 func main() {
@@ -38,20 +37,23 @@ func main() {
 	port := os.Args[1]
 	address := ":" + port
 
-	listener, err := net.Listen("tcp", address)
+	h := &handler{
+		add: address,
+	}
+
+	s := &http.Server{
+		Addr:    address,
+		Handler: h,
+	}
+
+	err := s.ListenAndServe()
+
 	if err != nil {
 		log.Fatalf("Failed to listen on %s: %v", address, err)
 	}
-	defer listener.Close()
+
+	ctx, _ := context.WithTimeout(context.Background(), 20*time.Second)
+	defer s.Shutdown(ctx)
 
 	log.Printf("Backend server listening on %s", address)
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Printf("Failed to accept connection: %v", err)
-			continue
-		}
-		go handleConnection(conn)
-	}
 }
