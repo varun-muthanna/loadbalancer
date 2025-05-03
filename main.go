@@ -26,7 +26,7 @@ func main() {
 	}
 
 	var servers []*server.Server
-	var bannedDomains = []string{"*1.com",}
+	var bannedDomains []string 
 
 	for _, m := range cfg.BackendServers {
 		for key , value := range m{
@@ -34,6 +34,8 @@ func main() {
 		}
 	}
 
+	bannedDomains = append(bannedDomains,cfg.BannedDomains...) //pass list directly instead of each indices directly
+	
 	lb := balancer.NewLoadBalancer(servers)
 	fp := forwardproxy.NewForwardProxy(bannedDomains)
 
@@ -42,7 +44,7 @@ func main() {
 
 	health.StartHealthCheck(servers, healthInterval, healthTimeout)
 
-	fmt.Printf("Load Balancer listening on: %s", cfg.ListenAddress)
+	fmt.Printf("Load Balancer listening on: %s\n", cfg.ListenAddress)
 	proxy.StartProxy(cfg.ListenAddress, lb,fp)
 
 }

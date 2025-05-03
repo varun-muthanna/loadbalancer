@@ -6,6 +6,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/varun-muthanna/loadbalancer/balancer"
@@ -31,15 +34,26 @@ func StartProxy(listenaddress string, lb *balancer.Balancer, fp *forwardproxy.Fo
 		Handler: h,
 	}
 
-	err := s.ListenAndServe()
+	ch := make(chan os.Signal, 1) //buffer as incase go routine is not listening and signal arrives it can be lost 
 
-	if err != nil {
-		log.Fatalf("Failed to start proxy listener: %v", err)
-	}
+	go func() {
+
+		err := s.ListenAndServe()
+		if err != nil {
+			log.Printf("Failed to start proxy listener: %v", err)
+		}
+
+	}()
+
+	signal.Notify(ch, os.Interrupt)
+	signal.Notify(ch, syscall.SIGTERM)
+
+	sig := <-ch //blocking
+
+	fmt.Println("Gracefull shutdown initiated", sig)
 
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 	defer s.Shutdown(ctx)
-
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -81,9 +95,9 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(resBody) //essentially doing it twice 
+	w.Write(resBody) //essentially doing it twice
 	fmt.Println(string(resBody))
-	
+
 	//time.Sleep(2*time.Second)
 
 }

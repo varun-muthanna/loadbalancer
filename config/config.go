@@ -13,6 +13,7 @@ type Config struct {
 	BackendServers      []map[string]string `json:"backend_servers"`
 	HealthCheckInterval int      `json:"health_check_interval"`
 	HealthCheckTimeout  int      `json:"health_check_timeout"`
+	BannedDomains       []string  `json:"banned_domains"`
 }
 
 func LoadConfig(configpath string) (*Config, error) {
