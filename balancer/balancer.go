@@ -4,7 +4,6 @@ import (
 	"sync"
 
 	"github.com/varun-muthanna/loadbalancer/server"
-	"github.com/varun-muthanna/loadbalancer/forwardproxy"
 )
 
 type Balancer struct {
@@ -18,7 +17,7 @@ func NewLoadBalancer(srv []*server.Server) *Balancer{
 	}
 }
 
-func (lb *Balancer) GetLeastConnections(fp *forwardproxy.ForwardProxy) *server.Server {
+func (lb *Balancer) GetLeastConnections(host string) *server.Server {
 	lb.mutex.Lock()
 	defer lb.mutex.Unlock()
 
@@ -28,15 +27,9 @@ func (lb *Balancer) GetLeastConnections(fp *forwardproxy.ForwardProxy) *server.S
 	for _, srv := range lb.servers { //index ,server
 		srv.Mutex.Lock()
 
-		if srv.GetHealth() && srv.GetActiveConnections() < mx {
-
-			var c bool = fp.IsBanned(srv)
-
-			if !c{
-				res = srv
-				mx = srv.GetActiveConnections()
-			}
-
+		if srv.GetHealth() && srv.GetActiveConnections() < mx && host == srv.GetDomain(){
+			res=srv
+			mx=srv.GetActiveConnections()
 		}
 
 		srv.Mutex.Unlock()

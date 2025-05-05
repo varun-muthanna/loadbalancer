@@ -6,7 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"sync/atomic"
+	"syscall"
 	"time"
 )
 
@@ -46,14 +48,26 @@ func main() {
 		Handler: h,
 	}
 
-	err := s.ListenAndServe()
+	ch := make(chan os.Signal,1)
 
-	if err != nil {
-		log.Fatalf("Failed to listen on %s: %v", address, err)
-	}
+	go func(){
+		fmt.Printf("Server active and listening on %s \n",address)
+		
+		err := s.ListenAndServe()
+
+		if err != nil {
+			log.Fatalf("Failed to listen on %s: %v", address, err)
+		}
+
+	}()
+	
+	signal.Notify(ch,os.Interrupt)
+	signal.Notify(ch,syscall.SIGTERM)
+
+	sig := <-ch
+
+	fmt.Println("Gracefull initiated afer recieving ",sig)
 
 	ctx, _ := context.WithTimeout(context.Background(), 20*time.Second)
 	defer s.Shutdown(ctx)
-
-	log.Printf("Backend server listening on %s", address)
 }
