@@ -16,4 +16,5 @@ Send continuous http requests to lb port to reverse proxy work with load balanci
 
 ex: 
 curl http://localhost:8080 -H "host:example.com"   (public DNS resolution)
+
 wrk -t4 -c5 -d2s -s host.lua http://localhost:8080  (load balancing with local backend servers)
