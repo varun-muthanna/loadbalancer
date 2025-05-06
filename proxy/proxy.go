@@ -87,7 +87,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.Host=r.Host
-	req.Header = r.Header
 
 	res, err := http.DefaultClient.Do(req)
 
@@ -108,7 +107,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(resBody) //essentially doing it twice
-	//fmt.Println(string(resBody))
+
+	if(srv==nil) {
+		fmt.Println(string(resBody))
+	}
 }
 
 // architecture

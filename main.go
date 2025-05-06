@@ -39,6 +39,6 @@ func main() {
 
 	health.StartHealthCheck(servers, healthInterval, healthTimeout)
 
-	fmt.Printf("Load Balancer listening on: %s\n", cfg.ListenAddress)
+	fmt.Printf("Reverse proxy listening on: %s\n", cfg.ListenAddress)
 	proxy.StartReverseProxy(cfg.ListenAddress, lb)
 }
